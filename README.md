@@ -1,4 +1,4 @@
-# YouTube Manager
+# YouTube Playlist Downloader
 
 Una herramienta profesional basada en web diseñada para centralizar el flujo de trabajo con videos de YouTube. Permite desde la descarga automatizada de playlists completas hasta el procesamiento avanzado de audio y video (Normalización EBU R128 y compresión H.265) mediante una interfaz moderna, oscura y extremadamente intuitiva.
 
