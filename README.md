@@ -88,7 +88,7 @@ Si has colocado las herramientas en la raíz del proyecto (como se sugiere), las
 ---
 
 ## 📝 Créditos y Versión
-- **Versión**: 2.0.0 (Migración a Web UI)
+- **Versión**: 2.0 (Migración a Web UI)
 - **Motor de Descarga**: [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - **Motor de Procesamiento**: [FFmpeg](https://ffmpeg.org/)
 
