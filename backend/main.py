@@ -806,6 +806,10 @@ def read_root():
 def read_icon():
     return FileResponse("../frontend/icon.png")
 
+@app.get("/vue.global.prod.js")
+def read_vue():
+    return FileResponse("../frontend/vue.global.prod.js")
+
 if __name__ == "__main__":
     import sys
     with open("server.log", "w", encoding="utf-8") as f:
