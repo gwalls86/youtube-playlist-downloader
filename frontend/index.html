@@ -740,7 +740,7 @@
       <div class="logo">
         <img src="icon.png" alt="Logo" style="width:34px; height:34px; border-radius:9px; flex-shrink:0;">
         <div>
-          <div class="logo-name">YouTube Manager</div>
+          <div class="logo-name">YouTube Playlist Downloader</div>
           <div class="logo-sub">Powered by gwalls86</div>
         </div>
       </div>
@@ -890,8 +890,7 @@
             <input type="range" min="0" max="51" v-model.number="h265.h265_crf"
               style="flex:1;-webkit-appearance:none;height:3px;background:var(--bg4);border-radius:2px;outline:none">
             <span
-              style="font-size:14px;font-weight:700;color:var(--violet);font-family:'DM Mono',monospace;min-width:24px">{{
-              h265.h265_crf }}</span>
+              style="font-size:14px;font-weight:700;color:var(--violet);font-family:'DM Mono',monospace;min-width:24px">{{ h265.h265_crf }}</span>
           </div>
           <input type="range" v-if="false"> <!-- dummy for webkit slider thumb style -->
         </div>
@@ -983,7 +982,7 @@
           <span v-if="state==='running'" class="spin">⟳</span>
           <span v-else-if="state==='done'">✓</span>
           <span v-else-if="state==='error'">✗</span>
-          {{ { idle:'En espera', running:'Ejecutando', done:'Completado', error:'Error' }[state] }}
+          {{ { 'idle':'En espera', 'running':'Ejecutando', 'done':'Completado', 'error':'Error' }[state] }}
         </div>
       </div>
 
@@ -1049,7 +1048,7 @@
       <!-- Actions -->
       <div class="action-bar">
         <button class="btn btn-primary" :class="activeTab" :disabled="state==='running'" @click="startTask">
-          <span v-if="state!=='running'">{{ { dl:'▶ Descargar playlist', norm:'▶ Normalizar audio', h265:'▶ Normalizar + H.265' }[activeTab] }}</span>
+          <span v-if="state!=='running'">{{ { 'dl':'▶ Descargar playlist', 'norm':'▶ Normalizar audio', 'h265':'▶ Normalizar + H.265' }[activeTab] }}</span>
           <span v-else><span class="spin">⟳</span> Ejecutando…</span>
         </button>
         <button class="btn btn-stop" :disabled="state!=='running'" @click="stopTask">⬛ Detener</button>
@@ -1162,9 +1161,13 @@
           if (eventSource) { eventSource.close(); eventSource = null; }
           eventSource = new EventSource(`${API}/events`);
           eventSource.onmessage = (e) => {
+            console.log('SSE event:', e.data);
             const { type, payload } = JSON.parse(e.data);
             if (type === 'log') addLog(payload.message, payload.level, payload.ts);
-            else if (type === 'progress') Object.assign(progress, payload);
+            else if (type === 'progress') {
+              Object.assign(progress, payload);
+              if (state.value === 'idle') state.value = 'running';
+            }
             else if (type === 'stats') Object.assign(stats, payload);
             else if (type === 'done') {
               state.value = payload.success ? 'done' : 'error';
@@ -1255,7 +1258,26 @@
           window.close();
         }
 
-        onMounted(() => { loadConfig(); connectSSE(); });
+        onMounted(async () => {
+          console.log('App mounted, loading config and SSE...');
+          loadConfig();
+          connectSSE();
+          try {
+            console.log('Fetching status...');
+            const res = await fetch(API + '/status');
+            const data = await res.json();
+            console.log('Status response:', data);
+            if (data.running) {
+              state.value = 'running';
+              if (data.task) {
+                const taskToTab = { download: 'dl', normalize: 'norm', h265: 'h265' };
+                if (taskToTab[data.task]) activeTab.value = taskToTab[data.task];
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching status:', err);
+          }
+        });
 
         return {
           activeTab, tools, dl, norm, h265, h265_presets,

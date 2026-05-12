@@ -6,7 +6,7 @@ Uso:
     pip install fastapi uvicorn
     python main.py
 
-Puerto: 8004
+Puerto: 8005
 """
 
 from __future__ import annotations
@@ -684,6 +684,7 @@ def _run_normalize_pipeline(*, req: StartRequest, bridge: WorkerBridge,
 
 _worker_bridge: Optional[WorkerBridge] = None
 _worker_thread: Optional[threading.Thread] = None
+_current_task: Optional[str] = None
 CONFIG_PATH = Path(__file__).parent / CONFIG_FILE
 
 def _load_config():
@@ -715,12 +716,13 @@ def get_presets(): return {"h265_presets": H265_PRESETS, "default_video_format":
 
 @app.post("/api/start")
 def start_task(req: StartRequest):
-    global _worker_bridge, _worker_thread
+    global _worker_bridge, _worker_thread, _current_task
     if _worker_thread and _worker_thread.is_alive():
         return {"ok": False, "error": "Ya hay una tarea en curso"}
 
     _worker_bridge = WorkerBridge()
     bridge = _worker_bridge
+    _current_task = req.task
 
     def worker():
         try:
@@ -758,7 +760,8 @@ def stop_task():
 
 @app.get("/api/status")
 def get_status():
-    return {"running": bool(_worker_thread and _worker_thread.is_alive())}
+    is_running = bool(_worker_thread and _worker_thread.is_alive())
+    return {"running": is_running, "task": _current_task if is_running else None}
 
 @app.get("/api/events")
 async def event_stream(request: Request):
