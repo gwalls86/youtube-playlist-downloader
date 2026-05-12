@@ -1,4 +1,4 @@
-# 🎬 YouTube Manager — Web UI
+# YouTube Manager — Web UI
 
 Una herramienta profesional basada en web diseñada para centralizar el flujo de trabajo con videos de YouTube. Permite desde la descarga automatizada de playlists completas hasta el procesamiento avanzado de audio y video (Normalización EBU R128 y compresión H.265) mediante una interfaz moderna, oscura y extremadamente intuitiva.
 
@@ -6,6 +6,15 @@ Una herramienta profesional basada en web diseñada para centralizar el flujo de
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## 🎨 Icono del Proyecto
+
+<p align="center">
+  <img src="frontend/icon.png" width="160" alt="YouTube Manager Icon">
+</p>
+
 
 ---
 
@@ -48,7 +57,14 @@ Esta herramienta está optimizada para **Windows 10/11** y requiere:
 
 ## 📦 Guía de Uso
 
-### 1. Iniciar la Aplicación
+### 1. Instalar Dependencias
+Abre una terminal en la carpeta del proyecto e instala las librerías necesarias de Python:
+
+```powershell
+pip install fastapi uvicorn
+```
+
+### 2. Iniciar la Aplicación
 Simplemente ejecuta el archivo automatizado en la raíz del proyecto:
 
 ```powershell
@@ -59,8 +75,15 @@ Esto hará lo siguiente:
 1.  Iniciará el backend de FastAPI en segundo plano (puerto `8005`).
 2.  Abrirá automáticamente tu navegador en `http://localhost:8005`.
 
-### 2. Configuración Inicial
-La primera vez que abras la aplicación, ve a la sección **Herramientas** en la parte inferior de la barra lateral y verifica que las rutas a `ffmpeg` y `yt-dlp` sean correctas.
+### 3. Configuración Inicial (Importante)
+La primera vez que abras la aplicación, ve a la sección **Herramientas** en la parte inferior de la barra lateral y verifica las rutas. 
+
+Si has colocado las herramientas en la raíz del proyecto (como se sugiere), las rutas relativas que debes ingresar son:
+*   **ffmpeg**: `..\0-FFmpeg\bin\ffmpeg.exe`
+*   **yt-dlp**: `..\yt-dlp.exe`
+
+*(Estas rutas son relativas a la carpeta `backend` desde donde se ejecuta el servidor).*
+
 
 ---
 
