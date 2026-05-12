@@ -1245,11 +1245,14 @@
         async function quitApp() {
           if (!confirm('¿Estás seguro de que quieres cerrar la aplicación?')) return;
           try {
+            addLog('Apagando el backend…', 'WARNING');
             await fetch(`${API}/shutdown`, { method: 'POST' });
-            window.close();
           } catch (e) {
-            addLog('Error al apagar el backend: ' + e, 'ERROR');
+            // Ignoramos el error porque el servidor se apaga y corta la conexión
           }
+          addLog('Servidor apagado. Puedes cerrar esta pestaña.', 'SUCCESS');
+          // Intentamos cerrar la pestaña (algunos navegadores pueden bloquearlo)
+          window.close();
         }
 
         onMounted(() => { loadConfig(); connectSSE(); });

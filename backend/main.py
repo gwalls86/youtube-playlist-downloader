@@ -234,7 +234,12 @@ def run_subprocess_streaming(executable, args, bridge, *, log_output=False, capt
                     bridge.log(f"  {line}", "DIM")
             if bridge.cancel_token.is_cancelled():
                 break
-        proc.wait()
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            bridge.log("  ⚠ El proceso no respondió al terminar — forzando cierre", "WARNING")
+            proc.kill()
+            proc.wait()
     finally:
         bridge.cancel_token.active_process = None
 
@@ -772,7 +777,13 @@ async def event_stream(request: Request):
 def shutdown():
     import os
     import signal
-    os.kill(os.getpid(), signal.SIGTERM)
+    import threading
+    
+    def kill_soon():
+        time.sleep(0.5)
+        os.kill(os.getpid(), signal.SIGTERM)
+        
+    threading.Thread(target=kill_soon).start()
     return {"ok": True}
 
 @app.get("/api/select-folder")
