@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Manager</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #080c0f;
+      --bg1: #0e1316;
+      --bg2: #141a1e;
+      --bg3: #1a2126;
+      --bg4: #202830;
+      --border: rgba(255, 255, 255, 0.06);
+      --border2: rgba(255, 255, 255, 0.11);
+      --text: #e8eef2;
+      --text2: #7a8f9a;
+      --text3: #3d5060;
+      --red: #ff4d4d;
+      --red-dim: rgba(255, 77, 77, 0.10);
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.10);
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.08);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.10);
+      --violet: #a78bfa;
+      --violet-dim: rgba(167, 139, 250, 0.10);
+      --orange: #fb923c;
+      --orange-dim: rgba(251, 146, 60, 0.10);
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+    }
+
+    #app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      background: var(--bg1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 2px;
+    }
+
+    .logo {
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #ff4d4d, #a78bfa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .logo-name {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text3);
+      font-family: 'DM Mono', monospace;
+      margin-top: 1px;
+    }
+
+    /* task tabs */
+    .task-tabs {
+      padding: 12px 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .task-tab:hover {
+      background: var(--bg2);
+    }
+
+    .task-tab.active {
+      border-color: var(--border2);
+    }
+
+    .task-tab.active.dl {
+      background: var(--red-dim);
+      border-color: rgba(255, 77, 77, 0.3);
+    }
+
+    .task-tab.active.norm {
+      background: var(--cyan-dim);
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+
+    .task-tab.active.h265 {
+      background: var(--violet-dim);
+      border-color: rgba(167, 139, 250, 0.3);
+    }
+
+    .tab-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .tab-info {
+      flex: 1;
+    }
+
+    .tab-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .task-tab.active.dl .tab-name {
+      color: var(--red);
+    }
+
+    .task-tab.active.norm .tab-name {
+      color: var(--cyan);
+    }
+
+    .task-tab.active.h265 .tab-name {
+      color: var(--violet);
+    }
+
+    .tab-sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+
+    /* config panels */
+    .config-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    .config-panel::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .config-panel::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 2px;
+    }
+
+    .s-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+      margin-top: 14px;
+    }
+
+    .s-label:first-child {
+      margin-top: 0;
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 4px;
+    }
+
+    input[type=text],
+    input[type=number],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 9px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--cyan);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 44px;
+    }
+
+    .path-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .path-row input {
+      flex: 1;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+
+    .trow-label {
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .trow-sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 1px;
+    }
+
+    .toggle {
+      width: 32px;
+      height: 17px;
+      border-radius: 9px;
+      background: var(--bg4);
+      border: 1px solid var(--border2);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .toggle.on {
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+
+    .toggle.on::after {
+      left: 17px;
+    }
+
+    .lufs-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .lufs-row .field-group {
+      flex: 1;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .preset-btn {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 3px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 10px;
+      color: var(--text2);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--border2);
+    }
+
+    .preset-btn.active {
+      background: var(--violet-dim);
+      border-color: var(--violet);
+      color: var(--violet);
+    }
+
+    /* tools section */
+    .tools-section {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .main-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .main-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .main-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 3px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .state-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .state-pill.idle {
+      background: var(--bg3);
+      color: var(--text3);
+    }
+
+    .state-pill.running {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+
+    .state-pill.done {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .state-pill.error {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spin {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    /* stats row — 3 wide */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat {
+      background: var(--bg);
+      padding: 12px 18px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .stat-val {
+      font-size: 21px;
+      font-weight: 700;
+      margin: 3px 0 2px;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .stat-val.cyan {
+      color: var(--cyan);
+    }
+
+    .stat-val.red {
+      color: var(--red);
+    }
+
+    .stat-val.amber {
+      color: var(--amber);
+    }
+
+    .stat-val.green {
+      color: var(--green);
+    }
+
+    .stat-val.violet {
+      color: var(--violet);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    /* progress */
+    .progress-wrap {
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .prog-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .prog-label {
+      font-size: 11px;
+      color: var(--text2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 76%;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .prog-frac {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'DM Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    .prog-track {
+      height: 3px;
+      background: var(--bg3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .prog-fill.dl {
+      background: var(--red);
+    }
+
+    .prog-fill.norm {
+      background: var(--cyan);
+    }
+
+    .prog-fill.h265 {
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+    }
+
+    /* log */
+    .log-wrap {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .log-header {
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .log-clear {
+      font-size: 11px;
+      color: var(--text3);
+      cursor: pointer;
+    }
+
+    .log-clear:hover {
+      color: var(--text2);
+    }
+
+    .log-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 20px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      line-height: 1.9;
+    }
+
+    .log-body::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .log-body::-webkit-scrollbar-thumb {
+      background: var(--bg4);
+      border-radius: 2px;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 12px;
+    }
+
+    .log-ts {
+      color: var(--text3);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .log-msg {
+      word-break: break-all;
+    }
+
+    .log-msg.SUCCESS {
+      color: var(--green);
+    }
+
+    .log-msg.ERROR {
+      color: var(--red);
+    }
+
+    .log-msg.WARNING {
+      color: var(--amber);
+    }
+
+    .log-msg.INFO {
+      color: var(--text2);
+    }
+
+    .log-msg.DIM {
+      color: var(--text3);
+    }
+
+    .log-empty {
+      color: var(--text3);
+      font-size: 12px;
+      text-align: center;
+      padding: 28px 0;
+    }
+
+    /* action bar */
+    .action-bar {
+      padding: 11px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      justify-content: center;
+      color: #080c0f;
+    }
+
+    .btn-primary.dl {
+      background: var(--red);
+    }
+
+    .btn-primary.norm {
+      background: var(--cyan);
+    }
+
+    .btn-primary.h265 {
+      background: var(--violet);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-stop {
+      background: transparent;
+      border: 1px solid rgba(255, 77, 77, 0.3);
+      color: var(--red);
+      padding: 9px 14px;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: var(--red-dim);
+    }
+
+    .btn-stop:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 11px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+    }
+
+    .btn-sm:hover {
+      border-color: var(--text3);
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
+    <div class="sidebar">
+      <div class="logo">
+        <img src="icon.png" alt="Logo" style="width:34px; height:34px; border-radius:9px; flex-shrink:0;">
+        <div>
+          <div class="logo-name">YouTube Manager</div>
+          <div class="logo-sub">Powered by gwalls86</div>
+        </div>
+      </div>
+
+      <!-- Task selector -->
+      <div class="task-tabs">
+        <div class="task-tab dl" :class="{ active: activeTab === 'dl' }" @click="activeTab='dl'">
+          <span class="tab-icon">📥</span>
+          <div class="tab-info">
+            <div class="tab-name">Descargar playlist</div>
+            <div class="tab-sub">yt-dlp · manifest · numeración</div>
+          </div>
+        </div>
+        <div class="task-tab norm" :class="{ active: activeTab === 'norm' }" @click="activeTab='norm'">
+          <span class="tab-icon">🔊</span>
+          <div class="tab-info">
+            <div class="tab-name">Normalizar audio</div>
+            <div class="tab-sub">EBU R128 · loudnorm · -c:v copy</div>
+          </div>
+        </div>
+        <div class="task-tab h265" :class="{ active: activeTab === 'h265' }" @click="activeTab='h265'">
+          <span class="tab-icon">🎞</span>
+          <div class="tab-info">
+            <div class="tab-name">Normalizar + H.265</div>
+            <div class="tab-sub">loudnorm + libx265 · HEVC</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONFIG: DOWNLOAD ── -->
+      <div class="config-panel" v-show="activeTab === 'dl'">
+        <div class="s-label">Playlist</div>
+        <div class="field-group">
+          <div class="field-label">URL de YouTube</div>
+          <input type="text" v-model="dl.playlist_url" placeholder="https://www.youtube.com/playlist?list=...">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Carpeta de descarga</div>
+          <div class="path-row">
+            <input type="text" v-model="dl.download_folder" placeholder="Ruta de destino...">
+            <button class="btn-sm" @click="openFolderPicker('dl')">📁</button>
+          </div>
+        </div>
+        <div class="s-label">Archivos de control</div>
+        <div class="field-group">
+          <div class="field-label">Manifest JSON</div>
+          <input type="text" v-model="dl.manifest_path" placeholder="manifest.json">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Log de errores</div>
+          <input type="text" v-model="dl.error_log_path" placeholder="errores.json">
+        </div>
+        <div class="s-label">Formato de video</div>
+        <div class="field-group">
+          <textarea v-model="dl.video_format" rows="3"></textarea>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px">720p MP4 preferido por defecto</div>
+        </div>
+      </div>
+
+      <!-- ── CONFIG: NORMALIZE ── -->
+      <div class="config-panel" v-show="activeTab === 'norm'">
+        <div class="s-label">Carpetas</div>
+        <div class="field-group">
+          <div class="field-label">Carpeta de videos</div>
+          <div class="path-row">
+            <input type="text" v-model="norm.root_dir" placeholder="Carpeta con los videos...">
+            <button class="btn-sm" @click="openFolderPicker('norm')">📁</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Subcarpeta de salida</div>
+          <input type="text" v-model="norm.output_subfolder" placeholder="_normalized">
+        </div>
+        <div class="s-label">EBU R128 Loudness</div>
+        <div class="lufs-row">
+          <div class="field-group">
+            <div class="field-label">Target I (LUFS)</div>
+            <input type="text" v-model="norm.target_i" placeholder="-14">
+          </div>
+          <div class="field-group">
+            <div class="field-label">LRA (LU)</div>
+            <input type="text" v-model="norm.target_lra" placeholder="11">
+          </div>
+          <div class="field-group">
+            <div class="field-label">TP (dBTP)</div>
+            <input type="text" v-model="norm.target_tp" placeholder="-1.5">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Umbral (LUFS) — omitir si la diferencia es menor a</div>
+          <input type="number" v-model.number="norm.normalization_threshold" min="0" max="10" step="0.5">
+        </div>
+        <div class="s-label">Audio</div>
+        <div class="lufs-row">
+          <div class="field-group">
+            <div class="field-label">Codec</div>
+            <select v-model="norm.audio_codec">
+              <option>aac</option>
+              <option>mp3</option>
+              <option>opus</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Bitrate</div>
+            <input type="text" v-model="norm.audio_bitrate" placeholder="128k">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Sample rate</div>
+            <input type="text" v-model="norm.audio_sample_rate" placeholder="44100">
+          </div>
+        </div>
+        <div class="s-label">Opciones</div>
+        <div class="toggle-row">
+          <div>
+            <div class="trow-label">Omitir ya procesados</div>
+          </div>
+          <div class="toggle" :class="{ on: norm.skip_existing }" @click="norm.skip_existing=!norm.skip_existing"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="trow-label">Eliminar originales</div>
+            <div class="trow-sub">⚠ Irreversible</div>
+          </div>
+          <div class="toggle" :class="{ on: norm.delete_original }" @click="norm.delete_original=!norm.delete_original">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONFIG: H265 ── -->
+      <div class="config-panel" v-show="activeTab === 'h265'">
+        <div class="s-label">Carpetas</div>
+        <div class="field-group">
+          <div class="field-label">Carpeta de videos</div>
+          <div class="path-row">
+            <input type="text" v-model="h265.root_dir" placeholder="Carpeta con los videos...">
+            <button class="btn-sm" @click="openFolderPicker('h265')">📁</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Subcarpeta de salida</div>
+          <input type="text" v-model="h265.output_subfolder" placeholder="_normalized_h265">
+        </div>
+        <div class="s-label">H.265 / HEVC</div>
+        <div class="field-group">
+          <div class="field-label">CRF (0–51, recomendado 24–30)</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+            <input type="range" min="0" max="51" v-model.number="h265.h265_crf"
+              style="flex:1;-webkit-appearance:none;height:3px;background:var(--bg4);border-radius:2px;outline:none">
+            <span
+              style="font-size:14px;font-weight:700;color:var(--violet);font-family:'DM Mono',monospace;min-width:24px">{{
+              h265.h265_crf }}</span>
+          </div>
+          <input type="range" v-if="false"> <!-- dummy for webkit slider thumb style -->
+        </div>
+        <div class="field-group">
+          <div class="field-label">Preset</div>
+          <div class="preset-grid">
+            <div v-for="p in h265_presets" :key="p" class="preset-btn" :class="{ active: h265.h265_preset === p }"
+              @click="h265.h265_preset = p">{{ p }}</div>
+          </div>
+        </div>
+        <div class="s-label">EBU R128</div>
+        <div class="lufs-row">
+          <div class="field-group">
+            <div class="field-label">Target I</div><input type="text" v-model="h265.target_i">
+          </div>
+          <div class="field-group">
+            <div class="field-label">LRA</div><input type="text" v-model="h265.target_lra">
+          </div>
+          <div class="field-group">
+            <div class="field-label">TP</div><input type="text" v-model="h265.target_tp">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Umbral (LUFS)</div>
+          <input type="number" v-model.number="h265.normalization_threshold" min="0" max="10" step="0.5">
+        </div>
+        <div class="s-label">Audio</div>
+        <div class="lufs-row">
+          <div class="field-group">
+            <div class="field-label">Codec</div>
+            <select v-model="h265.audio_codec">
+              <option>aac</option>
+              <option>mp3</option>
+              <option>opus</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Bitrate</div><input type="text" v-model="h265.audio_bitrate">
+          </div>
+          <div class="field-group">
+            <div class="field-label">Sample rate</div><input type="text" v-model="h265.audio_sample_rate">
+          </div>
+        </div>
+        <div class="s-label">Opciones</div>
+        <div class="toggle-row">
+          <div>
+            <div class="trow-label">Omitir ya procesados</div>
+          </div>
+          <div class="toggle" :class="{ on: h265.skip_existing }" @click="h265.skip_existing=!h265.skip_existing"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="trow-label">Eliminar originales</div>
+            <div class="trow-sub">⚠ Irreversible</div>
+          </div>
+          <div class="toggle" :class="{ on: h265.delete_original }" @click="h265.delete_original=!h265.delete_original">
+          </div>
+        </div>
+      </div>
+
+      <!-- Herramientas globales -->
+      <div class="tools-section">
+        <div class="s-label" style="margin-bottom:8px">Herramientas</div>
+        <div class="field-group">
+          <div class="field-label">ffmpeg</div>
+          <input type="text" v-model="tools.ffmpeg_path" placeholder="ffmpeg o ruta completa">
+        </div>
+        <div class="field-group">
+          <div class="field-label">yt-dlp</div>
+          <input type="text" v-model="tools.yt_dlp_path" placeholder="yt-dlp o ruta completa">
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button class="btn-sm" @click="checkTools">Verificar</button>
+          <span v-if="toolsStatus" :style="{fontSize:'11px',color: toolsStatus.ok ? 'var(--green)' : 'var(--red)'}">
+            {{ toolsStatus.ok ? '✓ OK' : '✗ No encontrado' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+    <div class="main">
+      <div class="main-header">
+        <div>
+          <div class="main-title">{{ mainTitle }}</div>
+          <div class="main-sub">{{ mainSub }}</div>
+        </div>
+        <div class="state-pill" :class="state">
+          <span v-if="state==='running'" class="spin">⟳</span>
+          <span v-else-if="state==='done'">✓</span>
+          <span v-else-if="state==='error'">✗</span>
+          {{ { idle:'En espera', running:'Ejecutando', done:'Completado', error:'Error' }[state] }}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat" v-if="activeTab === 'dl'">
+          <div class="stat-label">Descargados</div>
+          <div class="stat-val cyan">{{ stats.ok }}</div>
+          <div class="stat-sub">de {{ stats.total || '–' }}</div>
+        </div>
+        <div class="stat" v-else>
+          <div class="stat-label">Procesados</div>
+          <div class="stat-val" :class="activeTab==='h265'?'violet':'cyan'">{{ stats.ok }}</div>
+          <div class="stat-sub">de {{ stats.total || '–' }}</div>
+        </div>
+
+        <div class="stat" v-if="activeTab==='dl'">
+          <div class="stat-label">Omitidos</div>
+          <div class="stat-val amber">{{ stats.skip }}</div>
+          <div class="stat-sub">ya existían</div>
+        </div>
+        <div class="stat" v-else>
+          <div class="stat-label">Espacio ahorrado</div>
+          <div class="stat-val green">{{ stats.saved_mb > 0 ? stats.saved_mb + ' MB' : '–' }}</div>
+          <div class="stat-sub">reducción</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Errores</div>
+          <div class="stat-val" :class="stats.fail > 0 ? 'red' : ''">{{ stats.fail }}</div>
+          <div class="stat-sub">{{ activeTab==='dl' ? 'fallidos' : (stats.total_time ? stats.total_time+' min' : 'tiempo total') }}</div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="prog-meta">
+          <span class="prog-label">{{ progress.label || 'En espera…' }}</span>
+          <span class="prog-frac">{{ progress.total ? progress.current+' / '+progress.total : '0 / 0' }}</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" :class="activeTab" :style="{ width: progressPct+'%' }"></div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="log-wrap">
+        <div class="log-header">
+          <span class="log-title">Actividad</span>
+          <span class="log-clear" @click="logs=[]">limpiar</span>
+        </div>
+        <div class="log-body" ref="logBody">
+          <div v-if="logs.length===0" class="log-empty">
+            Sin actividad · selecciona una tarea y presiona Iniciar
+          </div>
+          <div v-for="(l,i) in logs" :key="i" class="log-line">
+            <span class="log-ts">{{ l.ts }}</span>
+            <span class="log-msg" :class="l.level">{{ l.message }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="action-bar">
+        <button class="btn btn-primary" :class="activeTab" :disabled="state==='running'" @click="startTask">
+          <span v-if="state!=='running'">{{ { dl:'▶ Descargar playlist', norm:'▶ Normalizar audio', h265:'▶ Normalizar + H.265' }[activeTab] }}</span>
+          <span v-else><span class="spin">⟳</span> Ejecutando…</span>
+        </button>
+        <button class="btn btn-stop" :disabled="state!=='running'" @click="stopTask">⬛ Detener</button>
+        <button class="btn btn-stop" style="border-color:var(--text3); color:var(--text2);" @click="quitApp">✖
+          Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, computed, onMounted, nextTick, watch } = Vue;
+    const API = '/api';
+
+    createApp({
+      setup() {
+        const activeTab = ref('dl');
+        const tools = reactive({ ffmpeg_path: 'ffmpeg', yt_dlp_path: 'yt-dlp' });
+
+        const dl = reactive({
+          playlist_url: '', download_folder: '', error_log_path: 'errores.json',
+          manifest_path: 'manifest.json',
+          video_format: 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best[height<=720]',
+        });
+
+        const norm = reactive({
+          root_dir: '', output_subfolder: '_normalized',
+          process_log_path: 'log-normalized.json', norm_error_log_path: 'errors-normalized.json',
+          target_i: '-14', target_lra: '11', target_tp: '-1.5', normalization_threshold: 1.0,
+          audio_codec: 'aac', audio_bitrate: '128k', audio_sample_rate: '44100',
+          skip_existing: true, delete_original: false,
+          video_extensions: ['.mp4', '.mkv', '.avi', '.mov'],
+        });
+
+        const h265 = reactive({
+          root_dir: '', output_subfolder: '_normalized_h265',
+          process_log_path: 'log-normalized-h265.json', norm_error_log_path: 'errors-normalized-h265.json',
+          target_i: '-14', target_lra: '11', target_tp: '-1.5', normalization_threshold: 1.0,
+          h265_crf: 28, h265_preset: 'slow',
+          audio_codec: 'aac', audio_bitrate: '128k', audio_sample_rate: '44100',
+          skip_existing: true, delete_original: false,
+          video_extensions: ['.mp4', '.mkv', '.avi', '.mov'],
+        });
+
+        const h265_presets = ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium', 'slow', 'slower', 'veryslow'];
+
+        const state = ref('idle');
+        const logs = ref([]);
+        const progress = reactive({ current: 0, total: 0, label: '' });
+        const stats = reactive({ ok: 0, skip: 0, fail: 0, total: 0, current: 0, saved_mb: 0, total_time: 0 });
+        const toolsStatus = ref(null);
+        const logBody = ref(null);
+        let eventSource = null;
+
+        const progressPct = computed(() =>
+          progress.total ? Math.round(progress.current / progress.total * 100) : 0
+        );
+
+        const TASK_LABELS = { dl: 'Descarga de playlist', norm: 'Normalización de audio', h265: 'Normalización + H.265' };
+
+        const mainTitle = computed(() => ({
+          idle: TASK_LABELS[activeTab.value] || 'Listo',
+          running: `${TASK_LABELS[activeTab.value]} en curso`,
+          done: `${TASK_LABELS[activeTab.value]} completada`,
+          error: 'Error en la tarea',
+        }[state.value]));
+
+        const mainSub = computed(() => {
+          if (state.value === 'idle') return 'Configura los parámetros en la sidebar y presiona Iniciar';
+          if (state.value === 'running' && activeTab.value === 'dl') return dl.playlist_url || '…';
+          if (state.value === 'running' && activeTab.value !== 'dl') return `EBU R128 ${norm.target_i} LUFS${activeTab.value === 'h265' ? ` · H.265 CRF ${h265.h265_crf}` : ''}`;
+          if (state.value === 'done') return `${stats.ok} ok · ${stats.fail} errores`;
+          return 'Revisa el log para ver detalles';
+        });
+
+        function addLog(message, level = 'INFO', ts = null) {
+          logs.value.push({ message, level, ts: ts || new Date().toLocaleTimeString('es-CO', { hour12: false }) });
+          nextTick(() => { if (logBody.value) logBody.value.scrollTop = logBody.value.scrollHeight; });
+        }
+
+        async function checkTools() {
+          toolsStatus.value = null;
+          try {
+            const res = await fetch(`${API}/status`);
+            toolsStatus.value = { ok: res.ok };
+          } catch { toolsStatus.value = { ok: false }; }
+        }
+
+        async function loadConfig() {
+          try {
+            const res = await fetch(`${API}/config`);
+            const data = await res.json();
+            if (data.ffmpeg_path) tools.ffmpeg_path = data.ffmpeg_path;
+            if (data.yt_dlp_path) tools.yt_dlp_path = data.yt_dlp_path;
+            if (data.download) Object.assign(dl, data.download);
+            if (data.normalize) Object.assign(norm, data.normalize);
+            if (data.h265) Object.assign(h265, data.h265);
+          } catch { }
+        }
+
+        async function saveConfig() {
+          try {
+            await fetch(`${API}/config`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ config: { ...tools, download: { ...dl }, normalize: { ...norm }, h265: { ...h265 } } }),
+            });
+          } catch { }
+        }
+
+        function connectSSE() {
+          if (eventSource) { eventSource.close(); eventSource = null; }
+          eventSource = new EventSource(`${API}/events`);
+          eventSource.onmessage = (e) => {
+            const { type, payload } = JSON.parse(e.data);
+            if (type === 'log') addLog(payload.message, payload.level, payload.ts);
+            else if (type === 'progress') Object.assign(progress, payload);
+            else if (type === 'stats') Object.assign(stats, payload);
+            else if (type === 'done') {
+              state.value = payload.success ? 'done' : 'error';
+              saveConfig();
+            }
+          };
+        }
+
+        async function startTask() {
+          const tab = activeTab.value;
+
+          // Validaciones básicas
+          if (tab === 'dl' && !dl.playlist_url) { addLog('Ingresa la URL de la playlist.', 'ERROR'); return; }
+          if (tab !== 'dl' && !norm.root_dir && !h265.root_dir) { addLog('Especifica la carpeta de videos.', 'ERROR'); return; }
+          if (tab !== 'dl' && (tab === 'norm' ? norm.delete_original : h265.delete_original)) {
+            if (!confirm('⚠ La opción "Eliminar originales" está activada. Los archivos originales serán borrados tras procesar cada uno exitosamente. ¿Continuar?')) return;
+          }
+
+          logs.value = [];
+          Object.assign(stats, { ok: 0, skip: 0, fail: 0, total: 0, current: 0, saved_mb: 0, total_time: 0 });
+          Object.assign(progress, { current: 0, total: 0, label: '' });
+          state.value = 'running';
+
+          const body = {
+            task: tab === 'dl' ? 'download' : tab,
+            ...tools,
+            ...dl,
+            root_dir: tab === 'h265' ? h265.root_dir : norm.root_dir,
+            output_subfolder: tab === 'h265' ? h265.output_subfolder : norm.output_subfolder,
+            process_log_path: tab === 'h265' ? h265.process_log_path : norm.process_log_path,
+            norm_error_log_path: tab === 'h265' ? h265.norm_error_log_path : norm.norm_error_log_path,
+            target_i: tab === 'h265' ? h265.target_i : norm.target_i,
+            target_lra: tab === 'h265' ? h265.target_lra : norm.target_lra,
+            target_tp: tab === 'h265' ? h265.target_tp : norm.target_tp,
+            normalization_threshold: tab === 'h265' ? h265.normalization_threshold : norm.normalization_threshold,
+            audio_codec: tab === 'h265' ? h265.audio_codec : norm.audio_codec,
+            audio_bitrate: tab === 'h265' ? h265.audio_bitrate : norm.audio_bitrate,
+            audio_sample_rate: tab === 'h265' ? h265.audio_sample_rate : norm.audio_sample_rate,
+            skip_existing: tab === 'h265' ? h265.skip_existing : norm.skip_existing,
+            delete_original: tab === 'h265' ? h265.delete_original : norm.delete_original,
+            video_extensions: tab === 'h265' ? h265.video_extensions : norm.video_extensions,
+            h265_crf: h265.h265_crf,
+            h265_preset: h265.h265_preset,
+          };
+
+          try {
+            const res = await fetch(`${API}/start`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!data.ok) { addLog(data.error || 'Error al iniciar', 'ERROR'); state.value = 'error'; }
+          } catch {
+            addLog('No se puede conectar al backend. ¿Está corriendo main.py?', 'ERROR');
+            state.value = 'error';
+          }
+        }
+
+        async function stopTask() {
+          if (!confirm('¿Detener la tarea en curso? El archivo que se esté procesando quedará incompleto.')) return;
+          try { await fetch(`${API}/stop`, { method: 'POST' }); } catch { }
+        }
+
+        async function openFolderPicker(target) {
+          try {
+            const res = await fetch(`${API}/select-folder`);
+            const data = await res.json();
+            if (data.folder) {
+              if (target === 'dl') dl.download_folder = data.folder;
+              else if (target === 'norm') norm.root_dir = data.folder;
+              else if (target === 'h265') h265.root_dir = data.folder;
+            }
+          } catch (e) {
+            addLog('Error al abrir el selector de carpetas: ' + e, 'ERROR');
+          }
+        }
+
+        async function quitApp() {
+          if (!confirm('¿Estás seguro de que quieres cerrar la aplicación?')) return;
+          try {
+            await fetch(`${API}/shutdown`, { method: 'POST' });
+            window.close();
+          } catch (e) {
+            addLog('Error al apagar el backend: ' + e, 'ERROR');
+          }
+        }
+
+        onMounted(() => { loadConfig(); connectSSE(); });
+
+        return {
+          activeTab, tools, dl, norm, h265, h265_presets,
+          state, logs, progress, stats, toolsStatus, logBody,
+          progressPct, mainTitle, mainSub,
+          checkTools, startTask, stopTask,
+          openFolderPicker, quitApp,
+        };
+      }
+    }).mount('#app');
+
+    // webkit slider thumb style injection
+    const s = document.createElement('style');
+    s.textContent = 'input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--violet);cursor:pointer;border:2px solid var(--bg1)}';
+    document.head.appendChild(s);
+  </script>
+</body>
+
+</html>

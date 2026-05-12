@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Configuración y Logs locales
+backend/yt_manager_config.json
+backend/server.log
+backend/*.json
+!backend/main.py
+
+# Binarios grandes (descargados por el usuario)
+yt-dlp.exe
+0-FFmpeg/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
